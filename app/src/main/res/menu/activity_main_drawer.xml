@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_random"
+            android:icon="@drawable/ic_random"
+            android:title="Toate" />
+
+        <item
+            android:id="@+id/nav_favorite"
+            android:icon="@drawable/ic_like_full"
+            android:title="Favorite" />
+        <item
+            android:id="@+id/nav_animale"
+            android:icon="@drawable/ic_animale"
+            android:title="Animale" />
+        <item
+            android:id="@+id/nav_istorie"
+            android:icon="@drawable/ic_sand_clock"
+            android:title="Istorie" />
+        <item
+            android:id="@+id/nav_geografie"
+            android:icon="@drawable/ic_earth"
+            android:title="Geografie" />
+
+        <item
+            android:id="@+id/nav_diverse"
+            android:icon="@drawable/ic_funny"
+            android:title="Diverse" />
+
+    </group>
+
+
+    <group
+        android:id="@+id/menu_bottom1"
+        android:checkableBehavior="none">
+
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="Setari" />
+    </group>
+
+    <group
+        android:id="@+id/menu_bottom2"
+        android:checkableBehavior="none">
+            <item
+                android:id="@+id/nav_facebook"
+                android:icon="@drawable/ic_facebook"
+                android:title="Facebook" />
+
+            <item
+                android:id="@+id/nav_evalueaza"
+                android:icon="@drawable/ic_star"
+                android:title="Evalueaza" />
+
+
+   </group>
+
+</menu>
