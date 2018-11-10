@@ -33,9 +33,14 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -51,9 +56,9 @@ public class MainActivity extends AppCompatActivity
     public static boolean mIsInForegroundMode = false;
     public CheckBox dontShowAgain;
     public String pageVeche = "";
+    private List<Curiozitate> listaCurenta = new ArrayList<>();
     private Button btnFiltru;
     private ImageView drawableHeart, drawableShare;
-    private List<Curiozitate> listaCurenta = new ArrayList<>();
     private List<Curiozitate> listaSearch = new ArrayList<>();
     private List<Curiozitate> listAnimale = new ArrayList<>();
     private List<Curiozitate> listGeografie = new ArrayList<>();
@@ -61,18 +66,13 @@ public class MainActivity extends AppCompatActivity
     private List<Curiozitate> listFavorite = new ArrayList<>();
     private List<Curiozitate> listDiverse = new ArrayList<>();
     private TextView txtCuvant, txtPage;
-    //private AdView adView;
-    //private InterstitialAd interAd;
-    //private AdRequest adRequest;
-    //   private ImageView imagineFundal;
-    private RelativeLayout contentLayout;
+    private InterstitialAd interAd;
     private String ind;
     private int indexFavorite = 0;
     private Calendar cal = Calendar.getInstance();
     private Curiozitate curiozNoua = new Curiozitate();
     private Curiozitate curiozVeche = new Curiozitate();
     private Curiozitate curiozInCurs = new Curiozitate();
-    //private ProgressBar pb;
     private AlphaAnimation buttonClick = new AlphaAnimation(1F, 0.3F);
     private AlphaAnimation txtSwipe = new AlphaAnimation(0F, 1F);
     private Toolbar toolbar;
@@ -81,35 +81,32 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Toate");
         setSupportActionBar(toolbar);
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setCheckedItem(R.id.nav_random);
 
-        contentLayout = (RelativeLayout) findViewById(R.id.relLayout);
-        txtCuvant = (TextView) findViewById(R.id.txtCuvant);
+        RelativeLayout contentLayout = findViewById(R.id.relLayout);
+        txtCuvant = findViewById(R.id.txtCuvant);
         txtCuvant.setTextColor(Color.WHITE);
 
-        txtPage = (TextView) findViewById(R.id.txtPage);
+        txtPage = findViewById(R.id.txtPage);
         txtPage.setTextColor(Color.WHITE);
 
-        btnFiltru = (Button) findViewById(R.id.btnFiltru);
+        btnFiltru = findViewById(R.id.btnFiltru);
         btnFiltru.setVisibility(View.GONE);
 
-        //      imagineFundal = (ImageView) findViewById(R.id.imageFundal);
         sharedPref = this.getPreferences(Context.MODE_PRIVATE);
 
-       /* pb = (ProgressBar) findViewById(R.id.progressBar2);
-        pb.setVisibility(View.GONE);*/
         skipIntro();
 
         cal.set(Calendar.HOUR_OF_DAY, 18);
@@ -119,15 +116,19 @@ public class MainActivity extends AppCompatActivity
         PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 100, intentNot,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
+        assert alarm != null;
         alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
 
         //reclame
-       /* interAd = new InterstitialAd(this);
-        interAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712");
+        interAd = new InterstitialAd(this);
+        interAd.setAdUnitId("ca-app-pub-1675138020340294/4423566950");
+        interAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                requestNewInterstitial();
+            }
+        });
         requestNewInterstitial();
-        adRequest = new AdRequest.Builder().build();
-        interAd.loadAd(adRequest);*/
-
 
         btnFiltru.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,11 +143,13 @@ public class MainActivity extends AppCompatActivity
                 curiozInCurs = curioz;
                 toolbar.setTitle("Toate");
                 btnFiltru.setVisibility(View.GONE);
+                listaSearch.clear();
+                txtPage.setVisibility(View.VISIBLE);
             }
         });
 
 
-        drawableHeart = (ImageView) findViewById(R.id.btnHeart);
+        drawableHeart = findViewById(R.id.btnHeart);
         drawableHeart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -173,11 +176,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        drawableShare = (ImageView) findViewById(R.id.btnShare);
+        drawableShare = findViewById(R.id.btnShare);
         drawableShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //    pb.setVisibility(View.VISIBLE);
                 v.startAnimation(buttonClick);
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setType("text/plain");
@@ -199,7 +201,7 @@ public class MainActivity extends AppCompatActivity
         txtCuvant.setText(listaCurenta.get(i).getText());
         txtPage.setText("#" + i);
 
-       contentLayout.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
+        contentLayout.setOnTouchListener(new OnSwipeTouchListener(MainActivity.this) {
             public void onSwipeRight() {
                 if (!curiozVeche.getText().equals("")) {
                     isFavorite(curiozVeche);
@@ -218,7 +220,7 @@ public class MainActivity extends AppCompatActivity
                 pageVeche = txtPage.getText().toString();
                 curiozVeche.setId(leftIndex);
                 curiozVeche.setText(leftVar);
-                int index = 0;
+                int index;
                 if (listaCurenta.containsAll(listFavorite) && listFavorite.containsAll(listaCurenta)) {
                     index = getNextIndex();
                 } else {
@@ -240,27 +242,28 @@ public class MainActivity extends AppCompatActivity
                     listaCurenta.remove(deSters);
                 }
                 //reclame
-             /*  double rand = Math.random() * 13;
-               if (((int) rand) % 8 == 0) {
+                requestNewInterstitial();
+                double rand = Math.random() * 13;
+                if (((int) rand) % 4 == 0) {
                     if (interAd.isLoaded()) {
                         interAd.show();
                     }
-                }*/
+                }
             }
 
         });
     }
 
     //reclame
-   /* private void requestNewInterstitial() {
+    private void requestNewInterstitial() {
         AdRequest adRequest = new AdRequest.Builder().build();
         interAd.loadAd(adRequest);
-    }*/
+    }
 
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -268,11 +271,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /*  @Override
-      public boolean onCreateOptionsMenu(Menu menu) {
-          getMenuInflater().inflate(R.menu.main, menu);
-          return true;
-      }*/
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
 
@@ -284,14 +282,19 @@ public class MainActivity extends AppCompatActivity
             searchView = (SearchView) searchItem.getActionView();
         }
         if (searchView != null) {
+            assert searchManager != null;
             searchView.setSearchableInfo(searchManager.getSearchableInfo(MainActivity.this.getComponentName()));
         }
+        assert searchView != null;
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 int nr = 0;
                 for (Curiozitate item : listaCurenta) {
-                    if (item.getText().contains(query)) {
+
+                    String convertedString = Normalizer.normalize(item.getText(),
+                            Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+                    if (convertedString.contains(query)) {
                         listaSearch.add(item);
                         nr = nr + 1;
                     }
@@ -300,10 +303,17 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(MainActivity.this, "Nu s-au gasit rezultate!",
                             Toast.LENGTH_SHORT).show();
                 } else {
+                    Toast.makeText(MainActivity.this, nr + " rezultate!",
+                            Toast.LENGTH_SHORT).show();
+
                     btnFiltru.setVisibility(View.VISIBLE);
-                    btnFiltru.setText(query);
+                    btnFiltru.setText("Șterge: " + query.toUpperCase());
                     listaCurenta.clear();
                     listaCurenta.addAll(listaSearch);
+                    txtPage.setVisibility(View.INVISIBLE); //sss
+                    int index = getRandomIndex();
+                    curiozNoua = listaCurenta.get(index);
+                    txtCuvant.setText(curiozNoua.getText());
                 }
 
 
@@ -322,7 +332,6 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
         drawableShare.setEnabled(true);
         drawableHeart.setEnabled(true);
@@ -395,15 +404,15 @@ public class MainActivity extends AppCompatActivity
             startActivity(myIntent);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
     private List<Curiozitate> readTextFile(String fromFile) {
-        List<Curiozitate> listaCat = new ArrayList<Curiozitate>();
+        List<Curiozitate> listaCat = new ArrayList<>();
         try {
-            BufferedReader reader = null;
+            BufferedReader reader;
             reader = new BufferedReader(new InputStreamReader(getAssets().open(fromFile), "UTF-8"));
             String mLine;
             while ((mLine = reader.readLine()) != null) {
@@ -418,7 +427,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private Set<String> getFavorites() {
-        Set<String> listaFavorite = new HashSet<>();
+        Set<String> listaFavorite;
         listaFavorite = sharedPref.getStringSet("favorite", new HashSet<String>());
         return listaFavorite;
     }
@@ -428,7 +437,7 @@ public class MainActivity extends AppCompatActivity
         Set<String> setfav = getFavorites();
         setfav.add(curioz.getId());
         editor.putStringSet("favorite", setfav);
-        editor.commit();
+        editor.apply();
     }
 
     private void removeFromFavorites(Curiozitate curioz) {
@@ -436,7 +445,7 @@ public class MainActivity extends AppCompatActivity
         Set<String> setfav = getFavorites();
         setfav.remove(curioz.getId());
         editor.putStringSet("favorite", setfav);
-        editor.commit();
+        editor.apply();
     }
 
 
@@ -450,9 +459,8 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-    private int getRandomIndex() {
-        int index = (int) (Math.random() * (listaCurenta.size()));
-        return index;
+    public int getRandomIndex() {
+        return (int) (Math.random() * (listaCurenta.size()));
     }
 
     private int getNextIndex() {
@@ -469,7 +477,7 @@ public class MainActivity extends AppCompatActivity
 
     private List<Curiozitate> showFavorite() {
 
-        List<Curiozitate> listaFav = new ArrayList<Curiozitate>();
+        List<Curiozitate> listaFav = new ArrayList<>();
         List<Curiozitate> listaToate = showToate();
 
         for (Curiozitate curioz : listaToate) {
@@ -483,7 +491,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private List<Curiozitate> showToate() {
-        List<Curiozitate> listaToate = new ArrayList<Curiozitate>();
+        List<Curiozitate> listaToate = new ArrayList<>();
         listaToate.addAll(listAnimale);
         listaToate.addAll(listIstorie);
         listaToate.addAll(listGeografie);
@@ -533,7 +541,7 @@ public class MainActivity extends AppCompatActivity
             AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
             LayoutInflater adbInflater = LayoutInflater.from(MainActivity.this);
             View eulaLayout = adbInflater.inflate(R.layout.checkbox, null);
-            dontShowAgain = (CheckBox) eulaLayout.findViewById(R.id.skip);
+            dontShowAgain = eulaLayout.findViewById(R.id.skip);
             adb.setView(eulaLayout);
             adb.setIcon(R.drawable.ic_inform);
             adb.setTitle("Instructiuni:");
@@ -549,10 +557,7 @@ public class MainActivity extends AppCompatActivity
                     SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("skipMessage", checkBoxResult);
-                    // Commit the edits!
-                    editor.commit();
-                    // Intent myIntent = new Intent(MainActivity.this, Info.class);
-                    // startActivity(myIntent);
+                    editor.apply();
                     return;
                 }
             });
@@ -585,9 +590,9 @@ public class MainActivity extends AppCompatActivity
         mIsInForegroundMode = false;
     }
 
-    // Some function.
-    public boolean isInForeground() {
-        return mIsInForegroundMode;
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
 }

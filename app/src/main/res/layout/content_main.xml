@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/relLayout"
@@ -83,7 +82,11 @@
         android:layout_below="@+id/txtPage"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:text="Button" />
+        android:background="@drawable/buttonshape"
+        android:shadowRadius="24"
+        android:text="Button"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF" />
 
     <!-- <com.google.android.gms.ads.AdView
          android:id="@+id/adView"

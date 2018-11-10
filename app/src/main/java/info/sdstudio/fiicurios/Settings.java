@@ -20,7 +20,7 @@ public class Settings extends AppCompatActivity {
         }
 
 
-        Switch swNotificari = (Switch) findViewById(R.id.swNotification);
+        Switch swNotificari = findViewById(R.id.swNotification);
         boolean notif = MainActivity.sharedPref.getBoolean("notificari", true);
         if (notif) {
             swNotificari.setChecked(true);
@@ -36,12 +36,12 @@ public class Settings extends AppCompatActivity {
                 } else {
                     editor.putBoolean("notificari", false);
                 }
-                editor.commit();
+                editor.apply();
             }
         });
 
 
-        Switch swRandom = (Switch) findViewById(R.id.swRandom);
+        Switch swRandom = findViewById(R.id.swRandom);
         boolean aleatoriu = MainActivity.sharedPref.getBoolean("aleatoriu", true);
         if (aleatoriu) {
             swRandom.setChecked(true);
@@ -57,10 +57,9 @@ public class Settings extends AppCompatActivity {
                 } else {
                     editor.putBoolean("aleatoriu", false);
                 }
-                editor.commit();
+                editor.apply();
             }
         });
-
 
     }
 

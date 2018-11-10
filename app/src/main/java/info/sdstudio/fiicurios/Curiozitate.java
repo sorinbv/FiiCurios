@@ -1,13 +1,8 @@
 package info.sdstudio.fiicurios;
 
-/**
- * Created by sorin.donosa on 2/2/2017.
- */
-
 public class Curiozitate {
     private String id;
     private String text;
-    private String categorie;
     private int index;
 
     public Curiozitate() {
@@ -16,7 +11,6 @@ public class Curiozitate {
     public Curiozitate(String id, String text) {
         this.id = id;
         this.text = text;
-        this.categorie = categorie;
     }
 
     public String getId() {
@@ -25,14 +19,6 @@ public class Curiozitate {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public void setCategorie(String categorie) {
-        this.categorie = categorie;
     }
 
     public String getText() {

@@ -18,7 +18,6 @@ public class NotificationReciever extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         NotificationManager notifManag = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         Intent myIntent = new Intent(context, MainActivity.class);
         myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pend = PendingIntent.getActivity(context, 100, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -37,24 +36,22 @@ public class NotificationReciever extends BroadcastReceiver {
             if (alarmTime + 86400000 < currentDate) {
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context).setContentIntent(pend)
                         .setSmallIcon(R.drawable.ic_stat_name)
-                        //   .setColor(Color.BLUE)
-                        //	.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_question_sign))
                         .setContentTitle("Fii curios și azi!").setContentText("Citește noi curiozități.")
                         .setVibrate(new long[]{500, 500, 500, 500}).setSound(sound)
                         .setLights(Color.GREEN, 500, 1000).setAutoCancel(true);
 
                 boolean notif = MainActivity.sharedPref.getBoolean("notificari", true);
                 if (notif && !MainActivity.mIsInForegroundMode) {
+                    assert notifManag != null;
                     notifManag.notify(100, builder.build());
                     long timeNow = Calendar.getInstance().getTimeInMillis();
                     editor.putLong("alarmTime", timeNow);
-                    editor.commit();
+                    editor.apply();
                 }
 
             }
 
         }
-
 
     }
 
